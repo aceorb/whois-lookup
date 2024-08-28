@@ -4,9 +4,9 @@ import WhoisForm from "./components/WhoisForm.jsx";
 function App() {
 
   return (
-    <>
-      <WhoisForm/>
-    </>
+      <div className="bg-white">
+          <WhoisForm/>
+      </div>
   )
 }
 
