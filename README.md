@@ -4,6 +4,7 @@
 **Objective**: Implement a full-stack application that includes both backend and frontend components.
 It provides comprehensive information about domain names including
 details about domain registration ownership and contact information.
+![image](screen.png)
 
 ## Using Third Party
 The Whois API is a service that provides comprehensive information about domain names
