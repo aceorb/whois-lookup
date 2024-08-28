@@ -3,7 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 
-import { whoisUrl } from '../common/constants/general.constants';
+import {WhoisType, whoisUrl} from '../common/constants/general.constants';
 import { DomainRequestType } from '../common/types';
 
 @Injectable()
@@ -22,27 +22,56 @@ export class DomainService {
     try {
       const response = await firstValueFrom(this.httpService.get(url));
       const data = response.data;
-      if (type === 'domain') {
+      if (data.ErrorMessage) {
         return {
-          domainName: data.WhoisRecord?.domainName,
-          registrarName: data.WhoisRecord?.registrarName || 'N/A',
-          registrationDate: data.WhoisRecord?.createdDate || 'N/A',
-          expirationDate: data.WhoisRecord?.expiresDate || 'N/A',
-          estimatedDomainAge: data.WhoisRecord?.estimatedDomainAge || 'N/A',
-          hostnames: (data.WhoisRecord?.nameServers?.hostNames || [])
-            .map((hostname: string) =>
-              hostname.length > 25 ? hostname.slice(0, 25) + '...' : hostname,
-            )
-            .join(', '),
+          success: false,
+          message: data.ErrorMessage.msg,
         };
-      } else if (type === 'contact') {
+      }
+      if (data.WhoisRecord) {
+        if (data.WhoisRecord?.dataError) {
+          return {
+            success: false,
+            message: data.WhoisRecord?.dataError,
+          };
+        }
+        if (type === WhoisType.DOMAIN) {
+          return {
+            success: true,
+            type: type,
+            data: {
+              domainName: data.WhoisRecord?.domainName,
+              registrarName: data.WhoisRecord?.registrarName || 'N/A',
+              registrationDate: data.WhoisRecord?.createdDate || 'N/A',
+              expirationDate: data.WhoisRecord?.expiresDate || 'N/A',
+              estimatedDomainAge: data.WhoisRecord?.estimatedDomainAge || 'N/A',
+              hostnames: (data.WhoisRecord?.nameServers?.hostNames || [])
+                .map((hostname: string) =>
+                  hostname.length > 25
+                    ? hostname.slice(0, 25) + '...'
+                    : hostname,
+                )
+                .join(', '),
+            },
+          };
+        } else if (type === WhoisType.CONTACT) {
+          return {
+            success: true,
+            type: type,
+            data: {
+              registrantName: data.WhoisRecord?.registrant?.name || 'N/A',
+              technicalContactName:
+                data.WhoisRecord?.technicalContact?.name || 'N/A',
+              administrativeContactName:
+                data.WhoisRecord?.administrativeContact?.name || 'N/A',
+              contactEmail: data.WhoisRecord?.contactEmail || 'N/A',
+            },
+          };
+        }
+      } else {
         return {
-          registrantName: data.WhoisRecord?.registrant?.name || 'N/A',
-          technicalContactName:
-            data.WhoisRecord?.technicalContact?.name || 'N/A',
-          administrativeContactName:
-            data.WhoisRecord?.administrativeContact?.name || 'N/A',
-          contactEmail: data.WhoisRecord?.contactEmail || 'N/A',
+          success: false,
+          message: 'Unknown Error.',
         };
       }
     } catch (error) {
