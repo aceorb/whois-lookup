@@ -17,7 +17,7 @@ https://www.whoisxmlapi.com/whoisserver/WhoisService
 
 ## Configure WhoIs API
 
-whois-frontend/.env
+whois-backend/.env
 
 ```
 WHOIS_API_KEY=
